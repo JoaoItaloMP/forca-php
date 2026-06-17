@@ -1,8 +1,17 @@
 <?php
 
+session_start();
+
 include "palavras.php";
 
-$palavra = $palavras[array_rand($palavras)];
+if (!isset($_SESSION["palavra"])) {
+
+    $_SESSION["palavra"] =
+        $palavras[array_rand($palavras)];
+
+}
+
+$palavra = $_SESSION["palavra"];
 
 ?>
 
@@ -20,7 +29,7 @@ $palavra = $palavras[array_rand($palavras)];
 
     <h1>Jogo da Forca PHP</h1>
 
-    <p>Palavra sorteada:</p>
+    <p>Palavra armazenada na sessão:</p>
 
     <h2><?php echo $palavra; ?></h2>
 
