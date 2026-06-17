@@ -4,6 +4,14 @@ session_start();
 
 include "palavras.php";
 
+if (isset($_POST["novoJogo"])) {
+
+    session_destroy();
+
+    header("Location: index.php");
+    exit();
+}
+
 if (!isset($_SESSION["palavra"])) {
 
     $_SESSION["palavra"] =
@@ -16,8 +24,12 @@ if (!isset($_SESSION["palavra"])) {
 
 $palavra = $_SESSION["palavra"];
 $mensagem = "";
+$jogoFinalizado = false;
 
-if ($_SERVER["REQUEST_METHOD"] === "POST") {
+if (
+    $_SERVER["REQUEST_METHOD"] === "POST" &&
+    isset($_POST["letra"])
+) {
 
     $letra = strtoupper(trim($_POST["letra"]));
 
@@ -75,6 +87,38 @@ foreach (str_split($palavra) as $char) {
     }
 }
 
+$venceu = true;
+
+foreach (array_unique(str_split($palavra)) as $char) {
+
+    if (
+        !in_array(
+            $char,
+            $_SESSION["letrasCorretas"]
+        )
+    ) {
+
+        $venceu = false;
+        break;
+    }
+}
+
+if ($venceu) {
+
+    $mensagem =
+        "🎉 Parabéns! Você venceu!";
+
+    $jogoFinalizado = true;
+}
+
+if ($_SESSION["tentativas"] <= 0) {
+
+    $mensagem =
+        "❌ Você perdeu! A palavra era: $palavra";
+
+    $jogoFinalizado = true;
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -106,16 +150,32 @@ foreach (str_split($palavra) as $char) {
         <?php echo $mensagem; ?>
     </p>
 
+    <?php if (!$jogoFinalizado): ?>
+
+        <form method="POST">
+
+            <input
+                type="text"
+                name="letra"
+                maxlength="1"
+                required>
+
+            <button type="submit">
+                Tentar
+            </button>
+
+        </form>
+
+    <?php endif; ?>
+
+    <br>
+
     <form method="POST">
 
-        <input
-            type="text"
-            name="letra"
-            maxlength="1"
-            required>
-
-        <button type="submit">
-            Tentar
+        <button
+            type="submit"
+            name="novoJogo">
+            Novo Jogo
         </button>
 
     </form>
