@@ -10,30 +10,47 @@ if (!isset($_SESSION["palavra"])) {
         $palavras[array_rand($palavras)];
 
     $_SESSION["letrasCorretas"] = [];
+    $_SESSION["letrasErradas"] = [];
+    $_SESSION["tentativas"] = 6;
 }
 
 $palavra = $_SESSION["palavra"];
+$mensagem = "";
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
-    $letra = strtoupper($_POST["letra"]);
+    $letra = strtoupper(trim($_POST["letra"]));
 
     if (
         strlen($letra) === 1 &&
         ctype_alpha($letra)
     ) {
 
-        if (
-            !in_array(
-                $letra,
-                $_SESSION["letrasCorretas"]
-            )
-        ) {
+        if (str_contains($palavra, $letra)) {
 
-            if (str_contains($palavra, $letra)) {
+            if (
+                !in_array(
+                    $letra,
+                    $_SESSION["letrasCorretas"]
+                )
+            ) {
 
-                $_SESSION["letrasCorretas"][] =
-                    $letra;
+                $_SESSION["letrasCorretas"][] = $letra;
+                $mensagem = "Letra correta!";
+            }
+
+        } else {
+
+            if (
+                !in_array(
+                    $letra,
+                    $_SESSION["letrasErradas"]
+                )
+            ) {
+
+                $_SESSION["letrasErradas"][] = $letra;
+                $_SESSION["tentativas"]--;
+                $mensagem = "Letra incorreta!";
             }
         }
     }
@@ -74,6 +91,20 @@ foreach (str_split($palavra) as $char) {
     <h1>Jogo da Forca PHP</h1>
 
     <h2><?php echo $exibicao; ?></h2>
+
+    <p>
+        Tentativas restantes:
+        <?php echo $_SESSION["tentativas"]; ?>
+    </p>
+
+    <p>
+        Letras erradas:
+        <?php echo implode(", ", $_SESSION["letrasErradas"]); ?>
+    </p>
+
+    <p>
+        <?php echo $mensagem; ?>
+    </p>
 
     <form method="POST">
 
